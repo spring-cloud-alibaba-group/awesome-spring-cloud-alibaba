@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sca-k8s-demo-provider-service
+  name: sca-k8s-demo-provider-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sca-k8s-demo-provider-service
+  template:
+    metadata:
+      labels:
+        app: sca-k8s-demo-provider-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: sca-k8s-demo-spring-profile-cm
+                  key: spring-profiles-active
+            # jvm arguments
+            # - name: JAVA_OPTION
+            #  value: "-Dfile.encoding=UTF-8 -XX:+UseParallelGC -XX:+PrintGCDetails -Xloggc:/var/log/devops-example.gc.log -XX:+HeapDumpOnOutOfMemoryError -XX:+DisableExplicitGC"
+            # - name: XMX
+            # value: "128m"
+            # - name: XMS
+            # value: "128m"
+            # - name: XMN
+            # value: "64m"
+          name: sca-k8s-demo-provider-service
+          image: registry.cn-hangzhou.aliyuncs.com/yuluo-yx/sca-k8s-demo-provider-service:latest
+          ports:
+            - containerPort: 8082
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 30001
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 30001
+              schema: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 10
